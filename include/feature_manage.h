@@ -46,7 +46,7 @@ class FeatureManage {
   // 因此需要在Parse中实现output和roi的match处理，即当前的Parse对应的是那个roi
   int32_t Parse(
       std::shared_ptr<TrackIdResult> &output,
-      std::shared_ptr<DNNTensor> &output_tensor,
+      std::vector<std::shared_ptr<DNNTensor>> &output_tensors,
       std::shared_ptr<std::vector<hbDNNRoi>> rois,
       std::shared_ptr<NV12PyramidInput> pyramid = nullptr);
 

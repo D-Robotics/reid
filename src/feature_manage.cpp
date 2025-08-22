@@ -54,7 +54,7 @@ FeatureManage::FeatureManage(std::string db_file, int feature_size, float thresh
 
 int32_t FeatureManage::Parse(
     std::shared_ptr<TrackIdResult> &output,
-    std::shared_ptr<DNNTensor> &output_tensor,
+    std::vector<std::shared_ptr<DNNTensor>> &output_tensors,
     std::shared_ptr<std::vector<hbDNNRoi>> rois,
     std::shared_ptr<NV12PyramidInput> pyramid) {
 
@@ -63,9 +63,11 @@ int32_t FeatureManage::Parse(
     return -1;
   }
 
-  if (!output_tensor) {
-    RCLCPP_ERROR(rclcpp::get_logger("reid_fet_manage"), "invalid out tensor");
-    return -1;
+  for (int i = 0; i < output_tensors.size(); i++) {
+    if (!output_tensors[i]) {
+      RCLCPP_ERROR(rclcpp::get_logger("reid_fet_manage"), "invalid out tensor");
+      return -1;
+    }
   }
 
   std::shared_ptr<TrackIdResult> result = nullptr;
@@ -79,9 +81,9 @@ int32_t FeatureManage::Parse(
   }
   result->ids.resize(rois->size());
 
-  hbSysFlushMem(&(output_tensor->sysMem[0]), HB_SYS_MEM_CACHE_INVALIDATE);
-  float* data = reinterpret_cast<float*>(output_tensor->sysMem[0].virAddr);
-
+#ifdef PLATFORM_X5
+  output_tensors[0]->CACHE_INVALIDATE();
+  float* data = output_tensors[0]->GetTensorData<float>();
   // 取对应的float_tensor解析
   for (int roi_idx = 0; roi_idx < static_cast<int>(rois->size()); roi_idx++) {
     std::vector<float> feature(feature_size_);
@@ -92,6 +94,21 @@ int32_t FeatureManage::Parse(
       Render(pyramid, rois->at(roi_idx), file_name);
     }
   }
+#else
+  for (int roi_idx = 0; roi_idx < output_tensors.size(); roi_idx++) {
+    auto output_tensor = output_tensors[roi_idx];
+    output_tensor->CACHE_INVALIDATE();
+    float* data = output_tensor->GetTensorData<float>();
+    // 取对应的float_tensor解析
+    std::vector<float> feature(feature_size_);
+    std::copy(data, data + feature_size_, feature.begin());
+    int ret = UpdateReid(feature, roi_idx, result);
+    if (pyramid && ret != 0) {
+      std::string file_name = std::to_string(ret) + ".jpg";
+      Render(pyramid, rois->at(roi_idx), file_name);
+    }
+  }
+#endif
   return 0;
 }
 

@@ -50,7 +50,12 @@ include_directories(include
 
 if(PLATFORM_X5)
   message("build platform X5")
+  add_definitions(-DPLATFORM_X5)
   set(PREFIX_PATH x5)
+elseif(PLATFORM_S100)
+  message("build platform S100")
+  add_definitions(-DPLATFORM_S100)
+  set(PREFIX_PATH s100)
 else()
   message("invalid platform, build platform X5 default")
   set(PREFIX_PATH x5)
@@ -59,6 +64,7 @@ endif()
 message("CMAKE_SYSROOT is " ${CMAKE_SYSROOT})
 include_directories(
   ${CMAKE_SYSROOT}/usr/include/
+  ${CMAKE_SYSROOT}/usr/include/hobot/
   ${CMAKE_SYSROOT}/usr/hobot/include/
   ${CMAKE_SYSROOT}/usr/include/opencv/
 )
@@ -109,7 +115,7 @@ install(FILES
 )
 
 install(DIRECTORY
-${PROJECT_SOURCE_DIR}/launch/
+${PROJECT_SOURCE_DIR}/launch/${PREFIX_PATH}/
 DESTINATION share/${PROJECT_NAME}/launch)
 
 ament_package()
