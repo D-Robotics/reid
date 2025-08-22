@@ -42,7 +42,6 @@ using hobot::dnn_node::DnnNodeOutput;
 
 using hobot::dnn_node::DNNTensor;
 using hobot::dnn_node::ModelTaskType;
-using hobot::dnn_node::ModelRoiInferTask;
 using hobot::dnn_node::NV12PyramidInput;
 
 using ai_msgs::msg::PerceptionTargets;
@@ -88,7 +87,7 @@ class ReidNode : public DnnNode {
   FeedbackImgInfo fb_img_info_;
 
   std::string model_file_name_ = "config/reid.bin";
-  std::string model_name_ = "reid";
+  std::string model_name_ = "";
   ModelTaskType model_task_type_ = ModelTaskType::ModelRoiInferType;
 
   int model_input_width_ = -1;
@@ -99,9 +98,9 @@ class ReidNode : public DnnNode {
 
   // resizer model input size limit
   // roi, width & hight must be in range [16, 256)
-  int32_t roi_h_size_max_ = 1020;
+  int32_t roi_h_size_max_ = 896;
   int32_t roi_h_size_min_ = 16;
-  int32_t roi_w_size_max_ = 508;
+  int32_t roi_w_size_max_ = 448;
   int32_t roi_w_size_min_ = 16;
 
   int is_sync_mode_ = 0;
@@ -118,9 +117,6 @@ class ReidNode : public DnnNode {
 
   int FeedFromLocal();
 
-  int Predict(std::vector<std::shared_ptr<DNNInput>> &inputs,
-              const std::shared_ptr<std::vector<hbDNNRoi>> rois,
-              std::shared_ptr<DnnNodeOutput> dnn_output);
   void AiMsgProcess(const ai_msgs::msg::PerceptionTargets::ConstSharedPtr msg);
   
   int NormalizeRoi(const hbDNNRoi *src, hbDNNRoi *dst,

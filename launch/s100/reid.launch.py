@@ -42,7 +42,10 @@ def generate_launch_description():
                 'launch/mono2d_body_detection.launch.py')),
         launch_arguments={
             'smart_topic': LaunchConfiguration('smart_topic'),
-            'mono2d_body_pub_topic': '/hobot_mono2d_body_detection'
+            'mono2d_body_pub_topic': '/hobot_mono2d_body_detection',
+            'kps_model_file_name': 'config/yolo11x_pose_nashe_640x640_nv12.hbm',
+            'kps_model_type': '1',
+            'kps_track_mode': '0'
         }.items()
     )
 
@@ -53,8 +56,8 @@ def generate_launch_description():
         parameters=[
             {"is_sync_mode": 1},
             {"feed_type": 1},
-            {"model_file_name": "config/reid.bin"},
             {"dump_render_img": 0},
+            {"model_file_name": "config/reid.hbm"},
             {"threshold": LaunchConfiguration('reid_threshold')},
             {"ai_msg_pub_topic_name": LaunchConfiguration('smart_topic')},
             {"ai_msg_sub_topic_name": "/hobot_mono2d_body_detection"}

@@ -42,6 +42,7 @@ def generate_launch_description():
                 'launch/mono2d_body_detection.launch.py')),
         launch_arguments={
             'smart_topic': LaunchConfiguration('smart_topic'),
+            'kps_track_mode': '0',
             'mono2d_body_pub_topic': '/hobot_mono2d_body_detection'
         }.items()
     )
@@ -54,12 +55,11 @@ def generate_launch_description():
             {"is_sync_mode": 1},
             {"feed_type": 1},
             {"model_file_name": "config/reid.bin"},
-            {"dump_render_img": 0},
             {"threshold": LaunchConfiguration('reid_threshold')},
             {"ai_msg_pub_topic_name": LaunchConfiguration('smart_topic')},
             {"ai_msg_sub_topic_name": "/hobot_mono2d_body_detection"}
         ],
-        arguments=['--ros-args', '--log-level', 'warn']
+        arguments=['--ros-args', '--log-level', 'info']
     )
 
     return LaunchDescription([

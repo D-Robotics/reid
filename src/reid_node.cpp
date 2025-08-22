@@ -111,6 +111,16 @@ ReidNode::ReidNode(const std::string& node_name,
     RCLCPP_ERROR(this->get_logger(), "Init failed!");
   }
 
+  // 未指定模型名，从加载的模型中查询出模型名
+  if (model_name_.empty()) {
+    if (!GetModel()) {
+      RCLCPP_ERROR(rclcpp::get_logger("hobot_dosod"), "Get model fail.");
+    } else {
+      model_name_ = GetModel()->GetName();
+      RCLCPP_WARN(rclcpp::get_logger("hobot_dosod"), "Get model name: %s from load model.", model_name_.c_str());
+    }
+  }
+
   if (GetModelInputSize(0, model_input_width_, model_input_height_) < 0) {
     RCLCPP_ERROR(this->get_logger(),
                  "Get model input size fail!");
@@ -225,8 +235,9 @@ int ReidNode::PostProcess(
   if (!reid_output) {
     return -1;
   }
-  if (node_output->output_tensors.empty()) {
-    msg_publisher_->publish(std::move(reid_output->ai_msg));
+
+  if (reid_output->valid_rois == nullptr) {
+    RCLCPP_ERROR(this->get_logger(), "Invalid Valid Rois");
     return -1;
   }
 
@@ -245,12 +256,15 @@ int ReidNode::PostProcess(
 
   // 1. 解析模型输出向量
   auto reid_val = std::make_shared<TrackIdResult>();
-  if (reid_output->valid_rois != nullptr) {
-    if (feature_manage_->Parse(reid_val, reid_output->output_tensors[0], reid_output->valid_rois, reid_output->pyramid) < 0) {
-      ai_msgs::msg::PerceptionTargets::UniquePtr& msg = reid_output->ai_msg;
-      msg_publisher_->publish(std::move(msg));
-      return -1;
-    }
+  int ret = feature_manage_->Parse(reid_val, reid_output->output_tensors, reid_output->valid_rois, reid_output->pyramid);
+
+  if (feed_type_ == 0) {
+    return 0;
+  }
+
+  if (ret != 0) {
+    msg_publisher_->publish(std::move(reid_output->ai_msg));
+    return -1;
   }
   
   if (!reid_val) {
@@ -400,25 +414,6 @@ int ReidNode::PostProcess(
   msg_publisher_->publish(std::move(ai_msg));
 
   return 0;
-}
-
-int ReidNode::Predict(
-    std::vector<std::shared_ptr<DNNInput>>& inputs,
-    const std::shared_ptr<std::vector<hbDNNRoi>> rois,
-    std::shared_ptr<DnnNodeOutput> dnn_output) {
-  RCLCPP_DEBUG(this->get_logger(),
-               "task_num: %d",
-               dnn_node_para_ptr_->task_num);
-
-  RCLCPP_INFO(this->get_logger(),
-              "inputs.size(): %d, rois->size(): %d",
-              inputs.size(),
-              rois->size());
-
-  return Run(inputs,
-             dnn_output,
-             rois,
-             is_sync_mode_ == 1 ? true : false);
 }
 
 void ReidNode::RosImgProcess(
@@ -678,7 +673,7 @@ int ReidNode::FeedFromLocal() {
 
   uint32_t ret = 0;
   // 3. 开始预测
-  ret = Predict(inputs, rois, dnn_output);
+  ret = Run(inputs, dnn_output, rois, is_sync_mode_ == 1 ? true : false);
 
   // 4. 处理预测结果，如渲染到图片或者发布预测结果
   if (ret != 0) {
@@ -767,9 +762,7 @@ void ReidNode::RunPredict() {
     // inputs将会作为模型的输入通过RunInferTask接口传入
     std::vector<std::shared_ptr<DNNInput>> inputs;
     for (size_t i = 0; i < dnn_output->valid_rois->size(); i++) {
-      for (int32_t j = 0; j < model_manage->GetInputCount(); j++) {
-        inputs.push_back(pyramid);
-      }
+      inputs.push_back(pyramid);
     }
 
     struct timespec time_now = {0, 0};
@@ -779,8 +772,7 @@ void ReidNode::RunPredict() {
 
     uint32_t ret = 0;
     // 3. 开始预测
-    ret = Predict(inputs, dnn_output->valid_rois, dnn_output);
-
+    ret = Run(inputs, dnn_output, dnn_output->valid_rois, is_sync_mode_ == 1 ? true : false);
     // 4. 处理预测结果，如渲染到图片或者发布预测结果
     if (ret != 0) {
       continue;
