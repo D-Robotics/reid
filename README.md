@@ -11,13 +11,17 @@ The reid package is a usage example based on [reid](https://github.com/KaiyangZh
 # Development Environment
 
 - Programming Language: C/C++
-- Development Platform: X5
-- System Version: Ubuntu 22.04
-- Compilation Toolchain: Linaro GCC 11.4.0
+- Development Platform: X5/S100/S600
+- System Version: Ubuntu 22.04/24.04
+- Compilation Toolchain: Linaro GCC 11.4.0/Linaro GCC 13.3.0
 
 # Compilation
 
-- X5 Version: Supports compilation on the X5 Ubuntu system and cross-compilation using Docker on a PC.
+- X5 Version: Supports compilation on the X5 Ubuntu 22.04 system and cross-compilation using Docker on a PC.
+
+- S100 Version: Supports compilation on the S100 Ubuntu 22.04 system and cross-compilation using Docker on a PC.
+
+- S600 Version: Supports compilation on the S600 Ubuntu 24.04 system and cross-compilation using Docker on a PC.
 
 It also supports controlling the dependencies and functionality of the compiled pkg through compilation options.
 
@@ -55,7 +59,7 @@ hbm_img_msgs is a custom image message format used for image transmission in sha
 
 - Compilation command: `colcon build --packages-select reid`
 
-## Docker Cross-Compilation for X5 Version
+## Docker Cross-Compilation
 
 1. Compilation Environment Verification
 
@@ -70,6 +74,12 @@ hbm_img_msgs is a custom image message format used for image transmission in sha
   ```shell
   # RDK X5
   bash robot_dev_config/build.sh -p X5 -s reid
+
+  # RDK S100
+  bash robot_dev_config/build.sh -p S100 -s reid
+
+  # RDK S600
+  bash robot_dev_config/build.sh -p S600 -s reid
   ```
 
 - Shared memory communication method is enabled by default in the compilation options.
@@ -100,7 +110,7 @@ hbm_img_msgs is a custom image message format used for image transmission in sha
 
 ## Running
 
-## Running on X5 Ubuntu System
+## Running on RDK Ubuntu System
 
 Running method 1, use the executable file to start:
 ```shell
@@ -140,7 +150,7 @@ export CAM_TYPE=mipi
 ros2 launch reid reid.launch.py
 ```
 
-## Run on X5 Yocto system:
+## Run on Linux system:
 
 ```shell
 export ROS_LOG_DIR=/userdata/
