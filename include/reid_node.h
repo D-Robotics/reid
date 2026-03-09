@@ -83,10 +83,14 @@ class ReidNode : public DnnNode {
 
  private:
   // 用于预测的图片来源，0：本地nv12格式图片；1：订阅到的image msg
-  int feed_type_ = 1;
+  int feed_type_ = 0;
   FeedbackImgInfo fb_img_info_;
 
+#ifdef PLATFORM_X5
   std::string model_file_name_ = "config/reid.bin";
+#else
+  std::string model_file_name_ = "config/reid.hbm";
+#endif
   std::string model_name_ = "";
   ModelTaskType model_task_type_ = ModelTaskType::ModelRoiInferType;
 

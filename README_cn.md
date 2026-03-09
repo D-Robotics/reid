@@ -7,13 +7,17 @@
 # 开发环境
 
 - 编程语言: C/C++
-- 开发平台: X5
-- 系统版本：Ubuntu 22.04
-- 编译工具链: Linux GCC 11.4.0
+- 开发平台: X5/S100/S600
+- 系统版本：Ubuntu 22.04/Ubuntu 24.04
+- 编译工具链: Linux GCC 11.4.0/Linux GCC 13.3.0
 
 # 编译
 
-- X5版本：支持在 X5 Ubuntu系统上编译和在PC上使用docker交叉编译两种方式。
+- X5版本：支持在 X5 Ubuntu 22.04 系统上编译和在PC上使用docker交叉编译两种方式。
+
+- S100版本：支持在 S100 Ubuntu 22.04 系统上编译和在PC上使用docker交叉编译两种方式。
+
+- S600版本：支持在 S600 Ubuntu 24.04 系统上编译和在PC上使用docker交叉编译两种方式。
 
 同时支持通过编译选项控制编译pkg的依赖和pkg的功能。
 
@@ -41,7 +45,7 @@ hbm_img_msgs为自定义的图片消息格式, 用于shared mem场景下的图�
 - 如果关闭, 编译和运行不依赖hbm_img_msgs pkg, 支持使用原生ros和tros进行编译。
 - 对于shared mem通信方式, 当前只支持订阅nv12格式图片。
 
-## X5 Ubuntu系统上编译
+## RDK Ubuntu系统上编译
 
 1、编译环境确认
 
@@ -54,7 +58,7 @@ hbm_img_msgs为自定义的图片消息格式, 用于shared mem场景下的图�
 
 - 编译命令：`colcon build --packages-select reid`
 
-## docker交叉编译 X5版本
+## docker交叉编译
 
 1、编译环境确认
 
@@ -69,6 +73,12 @@ hbm_img_msgs为自定义的图片消息格式, 用于shared mem场景下的图�
   ```shell
   # RDK X5
   bash robot_dev_config/build.sh -p X5 -s reid
+  
+  # RDK S100
+  bash robot_dev_config/build.sh -p S100 -s reid
+
+  # RDK S600
+  bash robot_dev_config/build.sh -p S600 -s reid
   ```
 
 - 编译选项中默认打开了shared mem通信方式。
@@ -103,7 +113,7 @@ hbm_img_msgs为自定义的图片消息格式, 用于shared mem场景下的图�
 
 - 编译成功后, 将生成的install路径拷贝到地平线RDK上（如果是在RDK上编译, 忽略拷贝步骤）, 并执行如下命令运行。
 
-## X5 Ubuntu系统上运行
+## RDK Ubuntu系统上运行
 
 运行方式1, 使用可执行文件启动：
 ```shell
@@ -144,7 +154,7 @@ export CAM_TYPE=mipi
 ros2 launch reid reid.launch.py
 ```
 
-## X5 yocto系统上运行
+## Linux 系统上运行
 
 ```shell
 export ROS_LOG_DIR=/userdata/
